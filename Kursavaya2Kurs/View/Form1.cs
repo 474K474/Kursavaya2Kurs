@@ -1,170 +1,117 @@
-﻿using System;
+﻿using Kursavaya2Kurs.Model;
+using Kursavaya2Kurs.Presenter;
+using Kursavaya2Kurs.View;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Kursavaya2Kurs.Model;
 
 namespace Kursavaya2Kurs
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IMainView
     {
-        private Customer customer;
-        private Store store;
-        private List<Product> products;
+        private MainPresenter presenter;
 
         public MainForm()
         {
             InitializeComponent();
-            customer = new Customer(); // Начальные значения будут устанавливаться из текстовых полей
-            store = new Store();
-            products = new List<Product>
-            {
-                new Product { Name = "Apple", Price = 3, IsWeighable = true },
-                new Product { Name = "Bread", Price = 2, IsWeighable = false },
-                // Добавьте больше продуктов, если необходимо
-            };
-            ProductList.DataSource = products;
-            ProductList.DisplayMember = "Name";
-            UpdateCartDisplay();
-            UpdatePaymentInfo(); // Обновляем отображение начальных значений денег и бонусов
+            presenter = new MainPresenter(this);
         }
 
-        private void UpdateCartDisplay()
+        public List<Product> Products
         {
-            CartList.Items.Clear();
-            foreach (var item in customer.Cart)
+            set
             {
-                CartList.Items.Add($"{item.Product.Name} - {item.QuantityOrWeight} - {item.GetTotalPrice():C}");
-            }
-            totalLabel.Text = $"Total: {customer.GetTotalCartPrice():C}";
-        }
-
-        private void ProductList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selectedProduct = (Product)ProductList.SelectedItem;
-            if (selectedProduct != null)
-            {
-                ProductInfoBox.Text = $"Name: {selectedProduct.Name}\nPrice: {selectedProduct.Price:C}";
-                weighttxt.Enabled = selectedProduct.IsWeighable;
-                quantitytxt.Enabled = !selectedProduct.IsWeighable;
+                ProductList.DataSource = value;
+                ProductList.DisplayMember = "Name";
             }
         }
 
-        private void Addbtn_Click(object sender, EventArgs e)
+        public List<CartItem> CartItems
         {
-            var selectedProduct = (Product)ProductList.SelectedItem;
-            if (selectedProduct == null) return;
-
-            decimal quantityOrWeight = 0;
-
-            if (selectedProduct.IsWeighable)
+            set
             {
-                if (!decimal.TryParse(weighttxt.Text, out quantityOrWeight))
+                CartList.Items.Clear();
+                foreach (var item in value)
                 {
-                    MessageBox.Show("Invalid weight value.");
-                    return;
+                    CartList.Items.Add($"{item.Product.Name} - {item.QuantityOrWeight} - {item.GetTotalPrice():C}");
                 }
             }
-            else
-            {
-                if (!decimal.TryParse(quantitytxt.Text, out quantityOrWeight))
-                {
-                    MessageBox.Show("Invalid quantity value.");
-                    return;
-                }
-            }
-
-            var builder = new CartBuilder();
-            builder.AddProduct(selectedProduct, quantityOrWeight);
-            var items = builder.Build();
-
-            foreach (var item in items)
-            {
-                customer.AddToCart(item);
-            }
-
-            UpdateCartDisplay();
         }
 
-        private void Delbtn_Click(object sender, EventArgs e)
+        public string SelectedProductInfo
         {
-            if (CartList.SelectedItem != null)
-            {
-                var selectedItem = CartList.SelectedItem.ToString();
-                var itemToRemove = customer.Cart.FirstOrDefault(item => $"{item.Product.Name} - {item.QuantityOrWeight} - {item.GetTotalPrice():C}" == selectedItem);
-                if (itemToRemove != null)
-                {
-                    customer.RemoveFromCart(itemToRemove);
-                }
-                UpdateCartDisplay();
-            }
+            set => ProductInfoBox.Text = value;
         }
 
-        private void Paybtn_Click(object sender, EventArgs e)
+        public decimal TotalPrice
         {
-            UpdateCustomerInfo(); // Обновление значений клиента перед оплатой
-
-            decimal totalAmount = customer.GetTotalCartPrice();
-            IPaymentStrategy paymentStrategy;
-
-            if (Moneyrb.Checked)
-            {
-                paymentStrategy = new CashPaymentStrategy();
-            }
-            else if (Bonusrb.Checked)
-            {
-                paymentStrategy = new BonusPaymentStrategy();
-            }
-            else if (MonBonrb.Checked)
-            {
-                paymentStrategy = new MixedPaymentStrategy();
-            }
-            else
-            {
-                MessageBox.Show("Please select a payment method.");
-                return;
-            }
-
-            if (paymentStrategy.Pay(customer, totalAmount))
-            {
-                MessageBox.Show("Purchase successful!");
-                customer.Cart.Clear();
-                UpdateCartDisplay();
-                UpdatePaymentInfo();
-            }
-            else
-            {
-                MessageBox.Show("Insufficient funds or invalid payment.");
-            }
+            set => totalLabel.Text = $"Total: {value:C}";
         }
 
-        private void UpdateCustomerInfo()
+        public string Cash
         {
-            // Обновляем значения денег и бонусов из текстовых полей
-            if (decimal.TryParse(moneyRichTextBox.Text, out decimal cash))
-            {
-                customer.Cash = cash;
-            }
-            else
-            {
-                MessageBox.Show("Invalid cash value.");
-            }
-
-            if (decimal.TryParse(bonusRichTextBox.Text, out decimal bonusPoints))
-            {
-                customer.BonusPoints = bonusPoints;
-            }
-            else
-            {
-                MessageBox.Show("Invalid bonus points value.");
-            }
+            get => moneyRichTextBox.Text;
+            set => moneyRichTextBox.Text = value;
         }
 
-        private void UpdatePaymentInfo()
+        public string BonusPoints
         {
-            moneyRichTextBox.Text = customer.Cash.ToString("F2");
-            bonusRichTextBox.Text = customer.BonusPoints.ToString("F2");
+            get => bonusRichTextBox.Text;
+            set => bonusRichTextBox.Text = value;
         }
+
+        public bool IsWeightEnabled
+        {
+            set => weighttxt.Enabled = value;
+        }
+
+        public bool IsQuantityEnabled
+        {
+            set => quantitytxt.Enabled = value;
+        }
+
+        public Product SelectedProduct => (Product)ProductList.SelectedItem;
+
+        public string QuantityOrWeight => SelectedProduct?.IsWeighable == true ? weighttxt.Text : quantitytxt.Text;
+
+        public string SelectedCartItem => CartList.SelectedItem?.ToString();
+
+        public PaymentMethod SelectedPaymentMethod
+        {
+            get
+            {
+                if (Moneyrb.Checked) return PaymentMethod.Cash;
+                if (Bonusrb.Checked) return PaymentMethod.Bonus;
+                if (MonBonrb.Checked) return PaymentMethod.Mixed;
+                return PaymentMethod.None;
+            }
+        }
+
+        public event EventHandler AddProduct;
+        public event EventHandler RemoveProduct;
+        public event EventHandler Pay;
+        public event EventHandler UpdateCustomerInfo;
+        public event EventHandler SelectedProductChanged;
+
+        private void Addbtn_Click(object sender, EventArgs e) => AddProduct?.Invoke(sender, e);
+
+        private void Delbtn_Click(object sender, EventArgs e) => RemoveProduct?.Invoke(sender, e);
+
+        private void Paybtn_Click(object sender, EventArgs e) => Pay?.Invoke(sender, e);
+
+        private void moneyRichTextBox_TextChanged(object sender, EventArgs e) => UpdateCustomerInfo?.Invoke(sender, e);
+
+        private void bonusRichTextBox_TextChanged(object sender, EventArgs e) => UpdateCustomerInfo?.Invoke(sender, e);
+
+        private void ProductList_SelectedIndexChanged(object sender, EventArgs e) => SelectedProductChanged?.Invoke(sender, e);
     }
 
+    public enum PaymentMethod
+    {
+        None,
+        Cash,
+        Bonus,
+        Mixed
+    }
 }
