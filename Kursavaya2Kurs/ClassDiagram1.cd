@@ -28,13 +28,6 @@
       <FileName>Model\Product.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Kursavaya2Kurs.Model.Store">
-    <Position X="4" Y="4.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Model\Store.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="Kursavaya2Kurs.Model.BonusPaymentStrategy" BaseTypeListCollapsed="true">
     <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
@@ -62,7 +55,7 @@
   <Class Name="Kursavaya2Kurs.Presenter.MainPresenter">
     <Position X="6.25" Y="1.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ACAAAAABAAAAAgAAAAgFAAAAACABAAABAQAABAAAAAE=</HashCode>
+      <HashCode>ACAAAAABAAAAAgAAAAgFAAAAACABAAAAAQAABAAAAAE=</HashCode>
       <FileName>Presenter\MainPresenter.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -89,7 +82,7 @@
     </TypeIdentifier>
   </Interface>
   <Enum Name="Kursavaya2Kurs.PaymentMethod" Collapsed="true">
-    <Position X="6.25" Y="5.25" Width="1.5" />
+    <Position X="4" Y="4.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAQAAAAAACAAAAAAAAAAAgAAAAAAAAAAAAEAAAA=</HashCode>
       <FileName>View\Form1.cs</FileName>
