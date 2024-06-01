@@ -13,14 +13,12 @@ namespace Kursavaya2Kurs.Presenter
     {
         private readonly IMainView view;
         private readonly Customer customer;
-        private readonly Store store;
         private readonly List<Product> products;
 
         public MainPresenter(IMainView view)
         {
             this.view = view;
             customer = new Customer();
-            store = new Store();
             products = new List<Product>
             {
                 new Product { Name = "Apple", Price = 3, IsWeighable = true },
